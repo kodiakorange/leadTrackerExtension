@@ -16,7 +16,7 @@ function saveInput() {
 	const newLead = inputField.value;
 	myLeads.push(newLead);
 	const listItem = document.createElement("li");
-	listItem.textContent = newLead;
+	listItem.innerHTML = "<a target=blank href = '" + newLead + "'>" + newLead + "</a>";
 	savedLeads.appendChild(listItem);
 	inputField.value = "";
 }
