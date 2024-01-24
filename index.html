@@ -10,13 +10,20 @@
 	<body>
 		<h1>Sales Lead Tracker</h1>
 		<form id="leadForm">
-			<input title="input-el" id="input-el" type="text" placeholder="paste url here" />
+			<!-- New input field for lead name -->
+			<input title="leadName" id="leadName" type="text" placeholder="Lead Name" />
+
+			<input title="leadURL" id="leadURL" type="text" placeholder="Paste URL here" />
+
+			<label for="contactedCheckbox">Contacted:</label>
+			<input type="checkbox" id="contactedCheckbox" />
+
 			<button type="submit" id="input-btn">SAVE LEAD</button>
 			<button type="button" id="downloadBtn">DOWNLOAD</button>
 			<button type="button" id="clearBtn">CLEAR DATA</button>
 		</form>
 
-		<ol id="savedLeadsDisplay"></ol>
+		<ul id="savedLeadsDisplay"></ul>
 		<script src="index.js"></script>
 	</body>
 </html>
