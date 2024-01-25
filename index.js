@@ -1,12 +1,13 @@
 "use strict";
 const myLeads = [];
 const inputBtn = document.getElementById("input-btn");
-const leadName = document.getElementById("leadName"); // New lead name input field
+const leadName = document.getElementById("leadName");
 const leadURL = document.getElementById("leadURL");
 const contactedCheckbox = document.getElementById("contactedCheckbox");
 const savedLeads = document.getElementById("savedLeadsDisplay");
 const downloadBtn = document.getElementById("downloadBtn");
 const clearBtn = document.getElementById("clearBtn");
+const followUpDateInput = document.getElementById("followUpDate");
 
 const today = new Date();
 const month = today.getMonth() + 1;
@@ -21,7 +22,7 @@ function Lead(name, url, contacted) {
 }
 
 function saveInput() {
-	const newName = leadName.value; // Read the value from the lead name input field
+	const newName = leadName.value;
 	const newURL = leadURL.value;
 	const isContacted = contactedCheckbox.checked;
 
@@ -33,9 +34,15 @@ function saveInput() {
 	})`;
 	savedLeads.appendChild(listItem);
 
-	leadName.value = ""; // Reset lead name input field
+	leadName.value = "";
 	leadURL.value = "";
 	contactedCheckbox.checked = false;
+
+	// Ask the user if they want to create a follow-up reminder
+	const createFollowUp = confirm("Would you like to create a follow-up reminder?");
+	if (createFollowUp) {
+		createFollowUpEvent();
+	}
 }
 
 function clearData() {
@@ -66,16 +73,94 @@ function downloadLeads() {
 	}
 }
 
-leadForm.addEventListener("submit", function (event) {
+// Function to create Google Calendar link
+function createGoogleCalendarLink(leads, followUpDate) {
+	const googleCalendarURL = "https://www.google.com/calendar/render?action=TEMPLATE";
+	const params = leads
+		.map(
+			(lead) =>
+				`text=${encodeURIComponent(lead.name)}&details=${encodeURIComponent(
+					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nFollow-Up Date: ${followUpDate}`
+				)}`
+		)
+		.join("&");
+	return `${googleCalendarURL}&${params}`;
+}
+
+// Function to create iCal link
+function createICalLink(leads, followUpDate) {
+	const iCalURL = "data:text/calendar;charset=utf-8,";
+	const iCalContent = leads
+		.map(
+			(lead) =>
+				`BEGIN:VEVENT
+SUMMARY:${lead.name}
+DESCRIPTION:URL: ${lead.url}\\nContacted: ${lead.contacted ? "Yes" : "No"}\\nFollow-Up Date: ${followUpDate}
+END:VEVENT`
+		)
+		.join("\n");
+	return `${iCalURL}${encodeURIComponent(iCalContent)}`;
+}
+
+// Function to create Outlook link
+function createOutlookLink(leads, followUpDate) {
+	const outlookURL = "https://outlook.live.com/calendar/0/deeplink/compose";
+	const params = leads
+		.map(
+			(lead) =>
+				`subject=${encodeURIComponent(lead.name)}&body=${encodeURIComponent(
+					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nFollow-Up Date: ${followUpDate}`
+				)}`
+		)
+		.join("&");
+	return `${outlookURL}?${params}`;
+}
+
+function createFollowUpEvent() {
+	const followUpDate = followUpDateInput.value;
+
+	if (!followUpDate) {
+		alert("Please select a follow-up date.");
+		return;
+	}
+
+	let downloadOption = prompt("Choose the calendar you would like to use:\n1. Google Calendar\n2. iCal\n3. Outlook");
+
+	if (!downloadOption) {
+		return; // User canceled the prompt
+	}
+
+	let downloadLink;
+
+	switch (downloadOption) {
+		case "1" || "":
+			downloadLink = createGoogleCalendarLink(myLeads, followUpDate);
+			break;
+		case "2":
+			downloadLink = createICalLink(myLeads, followUpDate);
+			break;
+		case "3":
+			downloadLink = createOutlookLink(myLeads, followUpDate);
+			break;
+		default:
+			alert("Invalid option selected");
+			return;
+	}
+
+	if (downloadLink) {
+		// Create a link and trigger a click to download
+		const link = document.createElement("a");
+		link.href = downloadLink;
+		link.download = mdyString + "leads.txt";
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+}
+
+inputBtn.addEventListener("click", function (event) {
 	event.preventDefault();
 	saveInput();
-});
-
-// Prevent form submission on Enter key press
-leadForm.addEventListener("keypress", function (event) {
-	if (event.key === "Enter") {
-		event.preventDefault();
-	}
 });
 
 downloadBtn.addEventListener("click", downloadLeads);
