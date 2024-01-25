@@ -1,5 +1,7 @@
 "use strict";
 const myLeads = [];
+const notes = document.getElementById("leadNotes");
+const leadForm = document.getElementById("leadForm");
 const inputBtn = document.getElementById("input-btn");
 const leadName = document.getElementById("leadName");
 const leadURL = document.getElementById("leadURL");
@@ -14,6 +16,11 @@ const month = today.getMonth() + 1;
 const day = today.getDate();
 const year = today.getFullYear();
 const mdyString = `${month}-${day}-${year} `;
+leadForm.addEventListener("keypress", function (event) {
+	if (event.key === "Enter") {
+		event.preventDefault();
+	}
+});
 
 function Lead(name, url, contacted) {
 	this.name = name;
@@ -37,8 +44,6 @@ function saveInput() {
 	leadName.value = "";
 	leadURL.value = "";
 	contactedCheckbox.checked = false;
-
-	// Ask the user if they want to create a follow-up reminder
 	const createFollowUp = confirm("Would you like to create a follow-up reminder?");
 	if (createFollowUp) {
 		createFollowUpEvent();
@@ -171,6 +176,10 @@ function createFollowUpEvent() {
 		document.body.removeChild(link);
 	}
 }
+
+leadForm.addEventListener("submit", function (event) {
+	event.preventDefault();
+});
 
 inputBtn.addEventListener("click", function (event) {
 	event.preventDefault();
