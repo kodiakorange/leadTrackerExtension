@@ -79,12 +79,26 @@ function createGoogleCalendarLink(leads, followUpDate) {
 	const params = leads
 		.map(
 			(lead) =>
-				`text=${encodeURIComponent(lead.name)}&details=${encodeURIComponent(
+				`text=${encodeURIComponent(`Follow up with ${lead.name}`)}&details=${encodeURIComponent(
 					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nFollow-Up Date: ${followUpDate}`
 				)}`
 		)
 		.join("&");
 	return `${googleCalendarURL}&${params}`;
+}
+
+// Function to create Outlook link
+function createOutlookLink(leads, followUpDate) {
+	const outlookURL = "https://outlook.live.com/calendar/0/deeplink/compose";
+	const params = leads
+		.map(
+			(lead) =>
+				`subject=${encodeURIComponent(`Follow up with ${lead.name}`)}&body=${encodeURIComponent(
+					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nFollow-Up Date: ${followUpDate}`
+				)}`
+		)
+		.join("&");
+	return `${outlookURL}?${params}`;
 }
 
 // Function to create iCal link
@@ -94,7 +108,7 @@ function createICalLink(leads, followUpDate) {
 		.map(
 			(lead) =>
 				`BEGIN:VEVENT
-SUMMARY:${lead.name}
+SUMMARY:Follow up with ${lead.name}
 DESCRIPTION:URL: ${lead.url}\\nContacted: ${lead.contacted ? "Yes" : "No"}\\nFollow-Up Date: ${followUpDate}
 END:VEVENT`
 		)
@@ -151,7 +165,7 @@ function createFollowUpEvent() {
 		// Create a link and trigger a click to download
 		const link = document.createElement("a");
 		link.href = downloadLink;
-		link.download = mdyString + "leads.txt";
+
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
