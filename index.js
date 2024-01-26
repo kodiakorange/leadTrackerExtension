@@ -39,9 +39,9 @@ function saveInput() {
 		myLeads.push(new Lead(newName, newURL, newNotes, isContacted));
 
 		const listItem = document.createElement("li");
-		listItem.innerHTML = `<a target="_blank" href="${newURL}">${newName}</a> (Contacted: ${
+		listItem.innerHTML = `<a ${newURL ? `target="_blank" href="${newURL}"` : ""}>${newName}</a> (Contacted: ${
 			isContacted ? "Yes" : "No"
-		}. Notes: ${newNotes} )`;
+		}) Notes: ${newNotes}`;
 		savedLeads.appendChild(listItem);
 
 		leadName.value = "";
