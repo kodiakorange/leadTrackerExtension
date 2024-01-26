@@ -1,6 +1,6 @@
 "use strict";
 const myLeads = [];
-const notes = document.getElementById("leadNotes");
+const leadNotes = document.getElementById("leadNotes");
 const leadForm = document.getElementById("leadForm");
 const inputBtn = document.getElementById("input-btn");
 const leadName = document.getElementById("leadName");
@@ -22,31 +22,39 @@ leadForm.addEventListener("keypress", function (event) {
 	}
 });
 
-function Lead(name, url, contacted) {
+function Lead(name, url, notes, contacted) {
 	this.name = name;
 	this.url = url;
+	this.notes = notes;
 	this.contacted = contacted || false;
 }
 
 function saveInput() {
-	const newName = leadName.value;
-	const newURL = leadURL.value;
-	const isContacted = contactedCheckbox.checked;
+	if (leadName.value != "" && leadURL.value != "") {
+		const newName = leadName.value;
+		const newURL = leadURL.value;
+		const newNotes = leadNotes.value;
+		const isContacted = contactedCheckbox.checked;
 
-	myLeads.push(new Lead(newName, newURL, isContacted));
+		myLeads.push(new Lead(newName, newURL, newNotes, isContacted));
 
-	const listItem = document.createElement("li");
-	listItem.innerHTML = `<a target="_blank" href="${newURL}">${newName}</a> (Contacted: ${
-		isContacted ? "Yes" : "No"
-	})`;
-	savedLeads.appendChild(listItem);
+		const listItem = document.createElement("li");
+		listItem.innerHTML = `<a target="_blank" href="${newURL}">${newName}</a> (Contacted: ${
+			isContacted ? "Yes" : "No"
+		}. Notes: ${newNotes} )`;
+		savedLeads.appendChild(listItem);
 
-	leadName.value = "";
-	leadURL.value = "";
-	contactedCheckbox.checked = false;
-	const createFollowUp = confirm("Would you like to create a follow-up reminder?");
-	if (createFollowUp) {
-		createFollowUpEvent();
+		leadName.value = "";
+		leadURL.value = "";
+		leadNotes.value = "";
+
+		contactedCheckbox.checked = false;
+		if (followUpDateInput.value != "") {
+			const createFollowUp = confirm("Would you like to create a follow-up reminder?");
+			if (createFollowUp) {
+				createFollowUpEvent();
+			}
+		}
 	}
 }
 
@@ -55,6 +63,7 @@ function clearData() {
 	savedLeads.innerHTML = "";
 	leadName.value = "";
 	leadURL.value = "";
+	leadNotes.value = "";
 	contactedCheckbox.checked = false;
 }
 
@@ -64,7 +73,12 @@ function downloadLeads() {
 		const blob = new Blob(
 			[
 				myLeads
-					.map((lead) => `${lead.name} - ${lead.url} (Contacted: ${lead.contacted ? "Yes" : "No"})`)
+					.map(
+						(lead) =>
+							`${lead.name} - ${lead.url} - Notes: ${lead.notes}. (Contacted: ${
+								lead.contacted ? "Yes" : "No"
+							}) `
+					)
 					.join("\n"),
 			],
 			{ type: "text/plain" }
@@ -79,13 +93,13 @@ function downloadLeads() {
 }
 
 // Function to create Google Calendar link
-function createGoogleCalendarLink(leads, followUpDate) {
+function createGoogleCalendarLink(leads) {
 	const googleCalendarURL = "https://www.google.com/calendar/render?action=TEMPLATE";
 	const params = leads
 		.map(
 			(lead) =>
 				`text=${encodeURIComponent(`Follow up with ${lead.name}`)}&details=${encodeURIComponent(
-					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nFollow-Up Date: ${followUpDate}`
+					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nNotes: ${lead.notes}`
 				)}`
 		)
 		.join("&");
@@ -93,13 +107,13 @@ function createGoogleCalendarLink(leads, followUpDate) {
 }
 
 // Function to create Outlook link
-function createOutlookLink(leads, followUpDate) {
+function createOutlookLink(leads) {
 	const outlookURL = "https://outlook.live.com/calendar/0/deeplink/compose";
 	const params = leads
 		.map(
 			(lead) =>
 				`subject=${encodeURIComponent(`Follow up with ${lead.name}`)}&body=${encodeURIComponent(
-					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nFollow-Up Date: ${followUpDate}`
+					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nNotes: ${lead.notes}`
 				)}`
 		)
 		.join("&");
@@ -107,41 +121,22 @@ function createOutlookLink(leads, followUpDate) {
 }
 
 // Function to create iCal link
-function createICalLink(leads, followUpDate) {
+function createICalLink(leads) {
 	const iCalURL = "data:text/calendar;charset=utf-8,";
 	const iCalContent = leads
 		.map(
 			(lead) =>
 				`BEGIN:VEVENT
 SUMMARY:Follow up with ${lead.name}
-DESCRIPTION:URL: ${lead.url}\\nContacted: ${lead.contacted ? "Yes" : "No"}\\nFollow-Up Date: ${followUpDate}
+DESCRIPTION:URL: ${lead.url}\\nContacted: ${lead.contacted ? "Yes" : "No"}\\nNotes: ${lead.notes}
 END:VEVENT`
 		)
 		.join("\n");
 	return `${iCalURL}${encodeURIComponent(iCalContent)}`;
 }
 
-// Function to create Outlook link
-function createOutlookLink(leads, followUpDate) {
-	const outlookURL = "https://outlook.live.com/calendar/0/deeplink/compose";
-	const params = leads
-		.map(
-			(lead) =>
-				`subject=${encodeURIComponent(lead.name)}&body=${encodeURIComponent(
-					`URL: ${lead.url}\nContacted: ${lead.contacted ? "Yes" : "No"}\nFollow-Up Date: ${followUpDate}`
-				)}`
-		)
-		.join("&");
-	return `${outlookURL}?${params}`;
-}
-
 function createFollowUpEvent() {
 	const followUpDate = followUpDateInput.value;
-
-	if (!followUpDate) {
-		alert("Please select a follow-up date.");
-		return;
-	}
 
 	let downloadOption = prompt("Choose the calendar you would like to use:\n1. Google Calendar\n2. iCal\n3. Outlook");
 
@@ -167,13 +162,8 @@ function createFollowUpEvent() {
 	}
 
 	if (downloadLink) {
-		// Create a link and trigger a click to download
-		const link = document.createElement("a");
-		link.href = downloadLink;
-
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
+		// Open the generated link in a new window with specific characteristics
+		window.open(downloadLink, "CalendarEvent", "max-width: 400px");
 	}
 }
 

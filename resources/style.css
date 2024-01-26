@@ -1,4 +1,5 @@
 body {
+    min-width: 400px;
     background-color: #5f9341;
     display: flex;
     flex-direction: column;
