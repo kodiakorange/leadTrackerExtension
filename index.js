@@ -1,7 +1,8 @@
 "use strict";
 
 //for each entry saved, i should add the lead object to localstorage.
-const myLeads = [];
+let myLeads = [];
+const listItem = document.createElement("li");
 const leadNotes = document.getElementById("leadNotes");
 const leadForm = document.getElementById("leadForm");
 const inputBtn = document.getElementById("input-btn");
@@ -44,7 +45,6 @@ function saveInput() {
 		// Store the JSON string in local storage
 		localStorage.setItem("myLeads", myLeadsJSON);
 
-		const listItem = document.createElement("li");
 		listItem.innerHTML = `<a ${newURL ? `target="_blank" href="${newURL}"` : ""}>${newName}</a> (Contacted: ${
 			isContacted ? "Yes" : "No"
 		}) Notes: ${newNotes}`;
@@ -181,6 +181,7 @@ function checkLocalStorage() {
 	if (myLeadsJSON) {
 		// Parse the JSON string back into an array
 		myLeads = JSON.parse(myLeadsJSON);
+		loadSavedLeads();
 
 		// Now you can use the myLeads array as needed, for example:
 		// renderLeads(); // Function to render leads from myLeads array
@@ -201,3 +202,12 @@ inputBtn.addEventListener("click", function (event) {
 
 downloadBtn.addEventListener("click", downloadLeads);
 clearBtn.addEventListener("click", clearData);
+
+function loadSavedLeads() {
+	for (let i = 0; i < myLeads.length; i++) {
+		listItem.innerHTML = `<a ${myLeads[i].url ? `target="_blank" href="${myLeads[i].url}"` : ""}>${
+			myLeads[i].name
+		}</a> (Contacted: ${myLeads[i].contacted ? "Yes" : "No"}) Notes: ${myLeads[i].notes}`;
+		savedLeads.appendChild(listItem.cloneNode(true));
+	}
+}
