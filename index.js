@@ -1,4 +1,6 @@
 "use strict";
+
+//for each entry saved, i should add the lead object to localstorage.
 const myLeads = [];
 const leadNotes = document.getElementById("leadNotes");
 const leadForm = document.getElementById("leadForm");
@@ -37,6 +39,10 @@ function saveInput() {
 		const isContacted = contactedCheckbox.checked;
 
 		myLeads.push(new Lead(newName, newURL, newNotes, isContacted));
+		const myLeadsJSON = JSON.stringify(myLeads);
+
+		// Store the JSON string in local storage
+		localStorage.setItem("myLeads", myLeadsJSON);
 
 		const listItem = document.createElement("li");
 		listItem.innerHTML = `<a ${newURL ? `target="_blank" href="${newURL}"` : ""}>${newName}</a> (Contacted: ${
@@ -147,7 +153,7 @@ function createFollowUpEvent() {
 	let downloadLink;
 
 	switch (downloadOption) {
-		case "1" || "":
+		case "1":
 			downloadLink = createGoogleCalendarLink(myLeads, followUpDate);
 			break;
 		case "2":
@@ -166,6 +172,23 @@ function createFollowUpEvent() {
 		window.open(downloadLink, "CalendarEvent", "max-width: 400px");
 	}
 }
+// Function to check local storage on page load
+function checkLocalStorage() {
+	// Retrieve data from local storage
+	let myLeadsJSON = localStorage.getItem("myLeads");
+
+	// If data exists in local storage
+	if (myLeadsJSON) {
+		// Parse the JSON string back into an array
+		myLeads = JSON.parse(myLeadsJSON);
+
+		// Now you can use the myLeads array as needed, for example:
+		// renderLeads(); // Function to render leads from myLeads array
+	}
+}
+
+// Event listener for page load
+window.addEventListener("load", checkLocalStorage);
 
 leadForm.addEventListener("submit", function (event) {
 	event.preventDefault();
