@@ -1,10 +1,16 @@
 {
 	"manifest_version": 3,
-	"version": "1.1",
-	"name": "Sales Lead Tracker",
+	"version": "0.0.0.1",
+	"name": "Sales and Recruiting Lead Tracker",
 
 	"action": {
-		"default_popup": "./index.html",
-		"default_icon": "./resources/icon128.png"
-	}
+		"default_popup": "./index.html"
+	},
+	"icons": {
+		"16": "./resources/icon16.png",
+		"48": "./resources/icon48.png",
+		"128": "./resources/icon128.png",
+		"256": "./resources/icon256.png"
+	},
+	"description": "sales recruiting contact list, saved locally to be able to close and return later"
 }
