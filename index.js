@@ -1,5 +1,8 @@
 "use strict";
 
+//CREATE AN EDIT BUTTON FOR ENTRIES!!!
+//CREATE A DELETE BUTTON FOR ENTRIES!!!!
+//Should show input fields to set name, url, notes, contacted,
 //for each entry saved, i should add the lead object to localstorage.
 let myLeads = [];
 const listItem = document.createElement("li");
@@ -45,16 +48,38 @@ function saveInput() {
 		// Store the JSON string in local storage
 		localStorage.setItem("myLeads", myLeadsJSON);
 
+		const listItem = document.createElement("li");
+		const deleteButton = document.createElement("button");
+		deleteButton.textContent = "Delete";
+
+		// Get the index of the current entry
+		const index = myLeads.length - 1;
+
+		deleteButton.addEventListener("click", function () {
+			// Remove the corresponding entry from the myLeads array
+			myLeads.splice(index, 1);
+
+			// Update the local storage with the modified array
+			localStorage.setItem("myLeads", JSON.stringify(myLeads));
+
+			// Remove the listItem from the DOM
+			listItem.remove();
+		});
+
 		listItem.innerHTML = `<a ${newURL ? `target="_blank" href="${newURL}"` : ""}>${newName}</a> (Contacted: ${
 			isContacted ? "Yes" : "No"
 		}) Notes: ${newNotes}`;
+
+		// Append the delete button to the listItem
+		listItem.appendChild(deleteButton);
+
 		savedLeads.appendChild(listItem);
 
 		leadName.value = "";
 		leadURL.value = "";
 		leadNotes.value = "";
-
 		contactedCheckbox.checked = false;
+
 		if (followUpDateInput.value != "") {
 			const createFollowUp = confirm("Would you like to create a follow-up reminder?");
 			if (createFollowUp) {
@@ -205,9 +230,35 @@ clearBtn.addEventListener("click", clearData);
 
 function loadSavedLeads() {
 	for (let i = 0; i < myLeads.length; i++) {
+		const listItem = document.createElement("li");
+
 		listItem.innerHTML = `<a ${myLeads[i].url ? `target="_blank" href="${myLeads[i].url}"` : ""}>${
 			myLeads[i].name
 		}</a> (Contacted: ${myLeads[i].contacted ? "Yes" : "No"}) Notes: ${myLeads[i].notes}`;
-		savedLeads.appendChild(listItem.cloneNode(true));
+
+		// Create a delete button for each entry
+		const deleteButton = document.createElement("button");
+		deleteButton.textContent = "Delete";
+		deleteButton.id = "deleteBtn";
+
+		// Get the index of the current entry
+		const index = i;
+
+		deleteButton.addEventListener("click", function () {
+			// Remove the corresponding entry from the myLeads array
+			myLeads.splice(index, 1);
+
+			// Update the local storage with the modified array
+			localStorage.setItem("myLeads", JSON.stringify(myLeads));
+
+			// Remove the listItem from the DOM
+			listItem.remove();
+		});
+
+		// Append the delete button to the listItem
+		listItem.appendChild(deleteButton);
+
+		// Append the listItem to the savedLeads
+		savedLeads.appendChild(listItem);
 	}
 }
