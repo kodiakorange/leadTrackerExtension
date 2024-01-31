@@ -9,7 +9,7 @@ const leadURL = document.getElementById("leadURL");
 const contactedCheckbox = document.getElementById("contactedCheckbox");
 const savedLeads = document.getElementById("savedLeadsDisplay");
 const downloadBtn = document.getElementById("downloadBtn");
-const clearBtn = document.getElementById("clearBtn");
+// const clearBtn = document.getElementById("clearBtn");
 const followUpDateInput = document.getElementById("followUpDate");
 
 const today = new Date();
@@ -30,14 +30,14 @@ function Lead(name, url, notes, contacted) {
 	this.contacted = contacted || false;
 }
 
-function clearData() {
-	myLeads.length = 0;
-	savedLeads.innerHTML = "";
-	leadName.value = "";
-	leadURL.value = "";
-	leadNotes.value = "";
-	contactedCheckbox.checked = false;
-}
+// function clearData() {
+// 	myLeads.length = 0;
+// 	savedLeads.innerHTML = "";
+// 	leadName.value = "";
+// 	leadURL.value = "";
+// 	leadNotes.value = "";
+// 	contactedCheckbox.checked = false;
+// }
 
 function downloadLeads() {
 	const confirmDownload = confirm("This will download a .txt file with your current lead list. Continue?");
@@ -167,7 +167,7 @@ inputBtn.addEventListener("click", function (event) {
 });
 
 downloadBtn.addEventListener("click", downloadLeads);
-clearBtn.addEventListener("click", clearData);
+// clearBtn.addEventListener("click", clearData);
 
 function editLead(lead, listItem) {
 	// Prompt the user to edit lead details
