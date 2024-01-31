@@ -1,9 +1,4 @@
 "use strict";
-
-//CREATE AN EDIT BUTTON FOR ENTRIES!!!
-//CREATE A DELETE BUTTON FOR ENTRIES!!!!
-//Should show input fields to set name, url, notes, contacted,
-//for each entry saved, i should add the lead object to localstorage.
 let myLeads = [];
 const listItem = document.createElement("li");
 const leadNotes = document.getElementById("leadNotes");
@@ -33,60 +28,6 @@ function Lead(name, url, notes, contacted) {
 	this.url = url;
 	this.notes = notes;
 	this.contacted = contacted || false;
-}
-
-function saveInput() {
-	if (leadName.value != "" && leadURL.value != "") {
-		const newName = leadName.value;
-		const newURL = leadURL.value;
-		const newNotes = leadNotes.value;
-		const isContacted = contactedCheckbox.checked;
-
-		myLeads.push(new Lead(newName, newURL, newNotes, isContacted));
-		const myLeadsJSON = JSON.stringify(myLeads);
-
-		// Store the JSON string in local storage
-		localStorage.setItem("myLeads", myLeadsJSON);
-
-		const listItem = document.createElement("li");
-		const deleteButton = document.createElement("button");
-		deleteButton.textContent = "Delete";
-
-		// Get the index of the current entry
-		const index = myLeads.length - 1;
-
-		deleteButton.addEventListener("click", function () {
-			// Remove the corresponding entry from the myLeads array
-			myLeads.splice(index, 1);
-
-			// Update the local storage with the modified array
-			localStorage.setItem("myLeads", JSON.stringify(myLeads));
-
-			// Remove the listItem from the DOM
-			listItem.remove();
-		});
-
-		listItem.innerHTML = `<a ${newURL ? `target="_blank" href="${newURL}"` : ""}>${newName}</a> (Contacted: ${
-			isContacted ? "Yes" : "No"
-		}) Notes: ${newNotes}`;
-
-		// Append the delete button to the listItem
-		listItem.appendChild(deleteButton);
-
-		savedLeads.appendChild(listItem);
-
-		leadName.value = "";
-		leadURL.value = "";
-		leadNotes.value = "";
-		contactedCheckbox.checked = false;
-
-		if (followUpDateInput.value != "") {
-			const createFollowUp = confirm("Would you like to create a follow-up reminder?");
-			if (createFollowUp) {
-				createFollowUpEvent();
-			}
-		}
-	}
 }
 
 function clearData() {
@@ -228,37 +169,119 @@ inputBtn.addEventListener("click", function (event) {
 downloadBtn.addEventListener("click", downloadLeads);
 clearBtn.addEventListener("click", clearData);
 
-function loadSavedLeads() {
-	for (let i = 0; i < myLeads.length; i++) {
+function editLead(lead, listItem) {
+	// Prompt the user to edit lead details
+	const newName = prompt("Name (Leave blank to keep unchanged):", lead.name);
+	const newURL = prompt("URL (Leave blank to keep unchanged):", lead.url);
+	const newNotes = prompt("Notes (Leave blank to keep unchanged):", lead.notes);
+	const newContacted = confirm("Has this lead been contacted? Cancel if no");
+
+	// Update lead object with new values if not blank
+	if (newName !== null && newName !== "") {
+		lead.name = newName;
+	}
+	if (newURL !== null && newURL !== "") {
+		lead.url = newURL;
+	}
+	if (newNotes !== null && newNotes !== "") {
+		lead.notes = newNotes;
+	}
+	lead.contacted = newContacted;
+
+	savedLeads.innerHTML = "";
+
+	// Update the myLeads array in local storage
+	localStorage.setItem("myLeads", JSON.stringify(myLeads));
+	loadSavedLeads();
+}
+
+function deleteLead(lead, index) {
+	myLeads.splice(index, 1);
+	localStorage.setItem("myLeads", JSON.stringify(myLeads));
+}
+
+function saveInput() {
+	if (leadName.value != "" && leadURL.value != "") {
+		const newName = leadName.value;
+		const newURL = leadURL.value;
+		const newNotes = leadNotes.value;
+		const isContacted = contactedCheckbox.checked;
+
+		const newLead = new Lead(newName, newURL, newNotes, isContacted);
+		myLeads.push(newLead);
+		const myLeadsJSON = JSON.stringify(myLeads);
+
+		// Store the JSON string in local storage
+		localStorage.setItem("myLeads", myLeadsJSON);
+
 		const listItem = document.createElement("li");
-
-		listItem.innerHTML = `<a ${myLeads[i].url ? `target="_blank" href="${myLeads[i].url}"` : ""}>${
-			myLeads[i].name
-		}</a> (Contacted: ${myLeads[i].contacted ? "Yes" : "No"}) Notes: ${myLeads[i].notes}`;
-
-		// Create a delete button for each entry
+		const editButton = document.createElement("button");
 		const deleteButton = document.createElement("button");
+		editButton.textContent = "Edit";
+		editButton.className = "modifyBtn";
 		deleteButton.textContent = "Delete";
-		deleteButton.id = "deleteBtn";
+		deleteButton.className = "modifyBtn";
 
-		// Get the index of the current entry
-		const index = i;
+		editButton.addEventListener("click", function () {
+			editLead(newLead, listItem);
+		});
 
 		deleteButton.addEventListener("click", function () {
-			// Remove the corresponding entry from the myLeads array
-			myLeads.splice(index, 1);
-
-			// Update the local storage with the modified array
-			localStorage.setItem("myLeads", JSON.stringify(myLeads));
-
-			// Remove the listItem from the DOM
+			deleteLead(newLead, myLeads.indexOf(newLead));
 			listItem.remove();
 		});
 
-		// Append the delete button to the listItem
-		listItem.appendChild(deleteButton);
+		listItem.innerHTML = `<a ${newLead.url ? `target="_blank" href="${newLead.url}"` : ""}>${
+			newLead.name
+		}</a> (Contacted: ${newLead.contacted ? "Yes" : "No"}) Notes: ${newLead.notes}`;
 
-		// Append the listItem to the savedLeads
+		listItem.appendChild(deleteButton);
+		listItem.appendChild(editButton);
+
 		savedLeads.appendChild(listItem);
+
+		leadName.value = "";
+		leadURL.value = "";
+		leadNotes.value = "";
+		contactedCheckbox.checked = false;
+
+		if (followUpDateInput.value != "") {
+			const createFollowUp = confirm("Would you like to create a follow-up reminder?");
+			if (createFollowUp) {
+				createFollowUpEvent();
+			}
+		}
+	}
+}
+
+function loadSavedLeads() {
+	for (let i = 0; i < myLeads.length; i++) {
+		const leadItem = document.createElement("li");
+		const lead = myLeads[i];
+		const editButton = document.createElement("button");
+		const deleteButton = document.createElement("button");
+
+		editButton.textContent = "Edit";
+		editButton.className = "modifyBtn";
+		deleteButton.textContent = "Delete";
+		deleteButton.className = "modifyBtn";
+
+		editButton.addEventListener("click", function () {
+			editLead(lead, leadItem);
+		});
+
+		deleteButton.addEventListener("click", function () {
+			deleteLead(lead, i);
+			leadItem.remove();
+		});
+
+		leadItem.innerHTML = `<a ${lead.url ? `target="_blank" href="${lead.url}"` : ""}>${lead.name}</a> (Contacted: ${
+			lead.contacted ? "Yes" : "No"
+		}) Notes: ${lead.notes}`;
+
+		leadItem.appendChild(deleteButton);
+		leadItem.appendChild(editButton);
+
+		savedLeads.appendChild(leadItem);
 	}
 }
