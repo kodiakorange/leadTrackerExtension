@@ -1,6 +1,12 @@
 "use strict";
 let myLeads = [];
 const listItem = document.createElement("li");
+const editButton = document.createElement("button");
+const deleteButton = document.createElement("button");
+editButton.textContent = "Edit";
+editButton.className = "modifyBtn";
+deleteButton.textContent = "Delete";
+deleteButton.className = "modifyBtn";
 const leadNotes = document.getElementById("leadNotes");
 const leadForm = document.getElementById("leadForm");
 const inputBtn = document.getElementById("input-btn");
@@ -170,32 +176,85 @@ downloadBtn.addEventListener("click", downloadLeads);
 // clearBtn.addEventListener("click", clearData);
 
 function editLead(lead, listItem) {
-	// Prompt the user to edit lead details
-	const newName = prompt("Name (Leave blank to keep unchanged):", lead.name);
-	const newURL = prompt("URL (Leave blank to keep unchanged):", lead.url);
-	const newNotes = prompt("Notes (Leave blank to keep unchanged):", lead.notes);
-	const newContacted = confirm("Has this lead been contacted? Cancel if no");
+	// Create input fields for editing lead details
+	const nameInput = document.createElement("input");
+	nameInput.type = "text";
+	nameInput.value = lead.name;
 
-	// Update lead object with new values if not blank
-	if (newName !== null && newName !== "") {
+	const urlInput = document.createElement("input");
+	urlInput.type = "text";
+	urlInput.value = lead.url;
+
+	const notesInput = document.createElement("input");
+	notesInput.type = "text";
+	notesInput.value = lead.notes;
+
+	const contactedCheckboxInput = document.createElement("input");
+	contactedCheckboxInput.type = "checkbox";
+	contactedCheckboxInput.checked = lead.contacted;
+
+	const saveEditedLead = document.createElement("button");
+	saveEditedLead.className = "modifyBtn";
+	saveEditedLead.textContent = "save";
+
+	// Replace the text content of the lead item with input fields
+	listItem.innerHTML = "";
+	listItem.appendChild(nameInput);
+	listItem.appendChild(urlInput);
+	listItem.appendChild(notesInput);
+	listItem.appendChild(contactedCheckboxInput);
+	listItem.appendChild(saveEditedLead);
+
+	// Change the onclick event of the save button to update lead details
+	saveEditedLead.onclick = function () {
+		const newName = nameInput.value.trim();
+		const newURL = urlInput.value.trim();
+		const newNotes = notesInput.value.trim();
+		const newContacted = contactedCheckboxInput.checked;
+
+		// Check if any required field is empty
+		if (!newName || !newURL) {
+			alert("Please fill in all required fields (Lead Name and Lead URL).");
+			return;
+		}
+
+		// Update lead object with new values
 		lead.name = newName;
-	}
-	if (newURL !== null && newURL !== "") {
 		lead.url = newURL;
-	}
-	if (newNotes !== null && newNotes !== "") {
 		lead.notes = newNotes;
-	}
-	lead.contacted = newContacted;
+		lead.contacted = newContacted;
 
-	savedLeads.innerHTML = "";
+		// Update the myLeads array in local storage
+		localStorage.setItem("myLeads", JSON.stringify(myLeads));
 
-	// Update the myLeads array in local storage
-	localStorage.setItem("myLeads", JSON.stringify(myLeads));
-	loadSavedLeads();
+		// Update the display of the edited lead
+		listItem.innerHTML = `<a ${lead.url ? `target="_blank" href="${lead.url}"` : ""}>${lead.name}</a> (Contacted: ${
+			lead.contacted ? "Yes" : "No"
+		}) Notes: ${lead.notes}`;
+
+		// Append edit and delete buttons with functionality to the edited lead
+		const editButton = document.createElement("button");
+		editButton.textContent = "Edit";
+		editButton.className = "modifyBtn";
+		editButton.addEventListener("click", function () {
+			editLead(lead, listItem);
+		});
+
+		const deleteButton = document.createElement("button");
+		deleteButton.textContent = "Delete";
+		deleteButton.className = "modifyBtn";
+		deleteButton.addEventListener("click", function () {
+			deleteLead(lead, myLeads.indexOf(lead));
+			listItem.remove();
+		});
+
+		listItem.appendChild(editButton);
+		listItem.appendChild(deleteButton);
+	};
 }
 
 function deleteLead(lead, index) {
+	d;
 	myLeads.splice(index, 1);
 	localStorage.setItem("myLeads", JSON.stringify(myLeads));
 }
@@ -213,14 +272,6 @@ function saveInput() {
 
 		// Store the JSON string in local storage
 		localStorage.setItem("myLeads", myLeadsJSON);
-
-		const listItem = document.createElement("li");
-		const editButton = document.createElement("button");
-		const deleteButton = document.createElement("button");
-		editButton.textContent = "Edit";
-		editButton.className = "modifyBtn";
-		deleteButton.textContent = "Delete";
-		deleteButton.className = "modifyBtn";
 
 		editButton.addEventListener("click", function () {
 			editLead(newLead, listItem);
@@ -255,6 +306,7 @@ function saveInput() {
 }
 
 function loadSavedLeads() {
+	savedLeads.innerHTML = "";
 	for (let i = 0; i < myLeads.length; i++) {
 		const leadItem = document.createElement("li");
 		const lead = myLeads[i];
