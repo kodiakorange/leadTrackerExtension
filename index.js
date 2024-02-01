@@ -254,7 +254,6 @@ function editLead(lead, listItem) {
 }
 
 function deleteLead(lead, index) {
-	d;
 	myLeads.splice(index, 1);
 	localStorage.setItem("myLeads", JSON.stringify(myLeads));
 }
